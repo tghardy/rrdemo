@@ -3,6 +3,7 @@ def filterer_prompt(policy, text):
     prompt = f"""
 You are a redaction, policy-based assistant. You will be given a POLICY and a chunk of TEXT to apply the POLICY to.\n
 If the TEXT you are given violates the POLICY, simply replace it with [redacted].\n
+Do not respond with anything other than the cleaned TEXT.\n
 Here is the POLICY:\n {policy}\n\n
 
 Here is the TEXT:\n\n
@@ -12,7 +13,7 @@ Here is the TEXT:\n\n
 
 def frontend_prompt(context, question):
     prompt = f"""
-                              Answer the QUESTION based only on the following CONTEXT. If the CONTEXT does not answer the question, say, "I can't help you with that."\n
+                              Answer the QUESTION based only on the following CONTEXT. If the CONTEXT does not relate to the question, say, "I can't help you with that."\n
                                                    Here is the CONTEXT: \n{context} 
                                                    \n\n
                                                    Here is the QUESTION: \n\n{question}                    

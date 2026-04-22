@@ -20,6 +20,39 @@ def get_retriever():
 db = get_retriever()
 
 
+## Stateless RAG function
+
+def invoke_rag(question, llm=None):
+    """
+    Invokes an LLM using the db retriever object as a RAG system without requiring state.
+    Baseline version: retrieves context and prompts the LLM directly.
+    
+    Args:
+        question (str): The question to answer
+        llm (ChatOllama, optional): LLM instance to use. If None, creates a default ChatOllama instance.
+    
+    Returns:
+        str: The LLM-generated response based on the context and question
+    """
+    if llm is None:
+        llm = ChatOllama(model="llama2")
+    
+    # Retrieve documents using the db retriever
+    print("Getting context...")
+    docs = db.invoke(question)
+    
+    # Extract and combine document content
+    context = "\n\n".join(doc.page_content for doc in docs)
+    
+    # Generate response using the context
+    response_prompt = frontend_prompt(context, question)
+    response = llm.invoke(response_prompt).content
+    
+    print("RAG Response:", response)
+    
+    return response
+
+
 ## Define State class
 
 class State(TypedDict):
@@ -34,14 +67,13 @@ class State(TypedDict):
 graph = StateGraph(State)
 
 def get_context(state):
-
+    print("Getting context...")
     docs = db.invoke(state["question"])
 
     context = "\n\n".join(doc.page_content for doc in docs)
 
     prompt = filterer_prompt(state["policy"], context)
     state["context"] = state["llm"].invoke(prompt).content
-
     return state
 
 
@@ -111,7 +143,5 @@ def run_graph(prompt, policy, llm):
         clean_response="",
         instructions=""
     )
-    GRAPH.invoke(s)
-
-
-run_graph("How does linear regression work?", policy="Do not mention gradient descent.", llm=ChatOllama(model="lfm2.5-thinking"))
+    result = GRAPH.invoke(s)
+    return result["response"]

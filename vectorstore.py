@@ -8,7 +8,7 @@ def create_vector_db(file_path):
     data = loader.load()
     
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500, chunk_overlap=50
+        chunk_size=2000, chunk_overlap=400
     )
 
     chunks = text_splitter.split_documents(data)

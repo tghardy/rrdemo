@@ -1,0 +1,15 @@
+[project]
+name = "redactaragstreamlit"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=1.5.8",
+    "langchain>=1.2.15",
+    "langchain-community>=0.4.1",
+    "langchain-ollama>=1.1.0",
+    "langgraph>=1.1.9",
+    "pypdf>=6.10.2",
+    "streamlit>=1.56.0",
+]

@@ -1,7 +1,7 @@
 from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain_community.vectorstores import Chroma
 from langgraph.graph import StateGraph, START, END
-from .prompts import filterer_prompt, validation_prompt, frontend_prompt
+from prompts import filterer_prompt, validation_prompt, frontend_prompt
 from typing_extensions import TypedDict
 
 
@@ -48,6 +48,7 @@ def get_context(state):
 def response(state):
     prompt = frontend_prompt(state["context"], state["question"])
     state["response"] = state["llm"].invoke(prompt).content
+    print("Initial response:", state["response"])
     return state
 
 
@@ -65,7 +66,7 @@ def decide_node(state):
         return "rewrite"
     
 def rewrite(state):
-    prompt = f"Rewrite this TEXT according to these INSTRUCTIONS: {state["instructions"]}\n\n TEXT: {state["response"]}"
+    prompt = f'Rewrite this TEXT according to these INSTRUCTIONS: {state["instructions"]} \n\n TEXT: {state["response"]}'
     state["response"] = state["llm"].invoke(prompt).content
     return state
 
@@ -100,6 +101,7 @@ GRAPH = graph.compile()
 
 
 def run_graph(prompt, policy, llm):
+    print("Running graph...")
     s = State(
         question=prompt,
         context="",
@@ -112,4 +114,4 @@ def run_graph(prompt, policy, llm):
     GRAPH.invoke(s)
 
 
-run_graph("Tell me about linear regression.", policy="Do not talk about assumptions", llm=ChatOllama(model="gemma3:1b"))
+run_graph("How does linear regression work?", policy="Do not mention gradient descent.", llm=ChatOllama(model="lfm2.5-thinking"))

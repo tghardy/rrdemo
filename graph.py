@@ -22,7 +22,7 @@ db = get_retriever()
 
 ## Stateless RAG function
 
-def invoke_rag(question, llm=None):
+def invoke_rag(question, policy, llm=None):
     """
     Invokes an LLM using the db retriever object as a RAG system without requiring state.
     Baseline version: retrieves context and prompts the LLM directly.
@@ -45,7 +45,7 @@ def invoke_rag(question, llm=None):
     context = "\n\n".join(doc.page_content for doc in docs)
     
     # Generate response using the context
-    response_prompt = frontend_prompt(context, question)
+    response_prompt = frontend_prompt(context, question, policy)
     response = llm.invoke(response_prompt).content
     
     print("RAG Response:", response)
@@ -79,7 +79,7 @@ def get_context(state):
 
 
 def response(state):
-    prompt = frontend_prompt(state["context"], state["question"])
+    prompt = frontend_prompt(state["context"], state["question"], state["policy"])
     state["response"] = state["llm"].invoke(prompt).content
     print("Initial response:", state["response"])
     return state

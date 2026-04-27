@@ -13,6 +13,7 @@ with st.sidebar:
     # Policy textbox
     policy = st.text_area(
         "Enter Policy:",
+        value="Do not talk about any of the linear regression assumptions.",
         placeholder="E.g., Do not mention any sensitive information...",
         height=120
     )
@@ -20,16 +21,18 @@ with st.sidebar:
     # Model selection dropdown
     model_choice = st.selectbox(
         "Select Model:",
-        options=["qwen2.5:14b", "gemma3:1b"],
+        options=["qwen2.5:14b", "gemma3:1b", "gpt-oss:20b"],
         index=0
     )
     
-    # Mode selection checkbox
-    use_graph = st.checkbox(
-        "Use RedactaRAG (policy-aware mode)",
-        value=True,
-        help="Enabled: Use RedactaRAG with policy filtering. Disabled: Use a standard RAG system."
-    )
+    # # Mode selection checkbox
+    # use_graph = st.checkbox(
+    #     "Use RedactaRAG (policy-aware mode)",
+    #     value=True,
+    #     help="Enabled: Use RedactaRAG with policy filtering. Disabled: Use a standard RAG system."
+    # )
+
+    use_graph = True
     
     mode_label = "run_graph (policy-aware)" if use_graph else "invoke_rag (baseline)"
     
@@ -46,55 +49,87 @@ with st.sidebar:
     """)
 
 # Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "redactarag_messages" not in st.session_state:
+    st.session_state.redactarag_messages = []
+
+if "standard_messages" not in st.session_state:
+    st.session_state.standard_messages = []
+
+col1, col2 = st.columns(2)
+cols = [col1, col2]
+for col in cols:
+    if col is col1:
+        with col:
+            st.header("RedactaRAG Defense")
+    if col is col2:
+        with col: 
+            st.header("System Prompt Defense")
+
+chat1, chat2 = st.columns(2, vertical_alignment="bottom", border=True, gap="medium")
+chats = [chat1, chat2]
+
+user_input = st.chat_input("Enter your prompt...")
+if user_input:
 
 # Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        # Display model tag for assistant messages
-        if message["role"] == "assistant" and "model_type" in message:
-            model_tag = "🔒 RedactaRAG" if message["model_type"] == "redactarag" else "📊 Standard RAG"
-            st.caption(model_tag)
-        st.markdown(message["content"])
+    for col in chats:
+        with col:
+            # if col is col1:
+            #     for message in st.session_state.redactarag_messages:
+            #         with st.chat_message(message["role"]):
+            #             # Display model tag for assistant messages
+            #             if message["role"] == "assistant" and "model_type" in message:
+            #                 model_tag = "🔒 RedactaRAG" if message["model_type"] == "redactarag" else "📊 Standard RAG"
+            #                 st.caption(model_tag)
+            #             # st.markdown(message["content"])
 
-# Chat input
-if user_input := st.chat_input("Enter your question or prompt..."):
-    # Add user message to history
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
-    
-    # Generate response
-    with st.chat_message("assistant"):
-        with st.spinner("Generating response..."):
-            try:
-                # Initialize LLM with selected model
-                llm = ChatOllama(model=model_choice)
-                
-                if use_graph:
-                    # Use run_graph (requires policy)
-                    if not policy.strip():
-                        st.warning("⚠️ Policy is required for run_graph mode. Please enter a policy in the sidebar.")
-                    else:
-                        response = run_graph(user_input, policy, llm)
-                        st.caption("🔒 RedactaRAG")
-                        st.markdown(response)
-                        st.session_state.messages.append({
-                            "role": "assistant",
-                            "content": response,
-                            "model_type": "redactarag"
-                        })
-                else:
-                    # Use baseline invoke_rag
-                    response = invoke_rag(user_input, llm)
-                    st.caption("📊 Standard RAG")
-                    st.markdown(response)
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": response,
-                        "model_type": "standard_rag"
-                    })
+            # if col is col2:
+            #     for message in st.session_state.standard_messages:
+            #         with st.chat_message(message["role"]):
+            #             # Display model tag for assistant messages
+            #             if message["role"] == "assistant" and "model_type" in message:
+            #                 model_tag = "🔒 RedactaRAG" if message["model_type"] == "redactarag" else "📊 Standard RAG"
+            #                 st.caption(model_tag)
+            #             # st.markdown(message["content"])
+
+            # Chat input
+            # Add user message to history
             
-            except Exception as e:
-                st.error(f"Error generating response: {str(e)}")
+            st.session_state.redactarag_messages.append({"role": "user", "content": user_input})
+            st.session_state.standard_messages.append({"role": "user", "content": user_input})
+            with st.chat_message("user"):
+                st.markdown(user_input)
+            
+            # Generate response
+            with st.chat_message("assistant"):
+                with st.spinner("Generating response..."):
+                    try:
+                        # Initialize LLM with selected model
+                        llm = ChatOllama(model=model_choice, temperature=0.2)
+                        
+                        if col is chat1:
+                            # Use run_graph (requires policy)
+                            if not policy.strip():
+                                st.warning("⚠️ Policy is required for run_graph mode. Please enter a policy in the sidebar.")
+                            else:
+                                response = run_graph(user_input, policy, llm)
+                                st.caption("🔒 RedactaRAG")
+                                st.markdown(response)
+                                st.session_state.redactarag_messages.append({
+                                    "role": "assistant",
+                                    "content": response,
+                                    "model_type": "redactarag"
+                                })
+                        else:
+                            # Use baseline invoke_rag
+                            response = invoke_rag(user_input, llm)
+                            st.caption("📊 Standard RAG")
+                            st.markdown(response)
+                            st.session_state.standard_messages.append({
+                                "role": "assistant",
+                                "content": response,
+                                "model_type": "standard_rag"
+                            })
+                    
+                    except Exception as e:
+                        st.error(f"Error generating response: {str(e)}")

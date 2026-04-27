@@ -35,7 +35,7 @@ def invoke_rag(question, llm=None):
         str: The LLM-generated response based on the context and question
     """
     if llm is None:
-        llm = ChatOllama(model="llama2")
+        llm = ChatOllama(model="qwen2.5:14b")
     
     # Retrieve documents using the db retriever
     print("Getting context...")
@@ -63,6 +63,7 @@ class State(TypedDict):
     policy: str
     clean_response: str
     instructions: str
+    attempts: int
 
 graph = StateGraph(State)
 
@@ -94,13 +95,21 @@ def evaluate(state):
 def decide_node(state):
     if 'good' in state["instructions"].strip().lower():
         return "print_response"
+    elif state["attempts"] > 5:
+        state["response"] = "I can't help you with that. Try rewording the prompt or asking about something else."
+        return "print_response"
     else:
         return "rewrite"
     
 def rewrite(state):
-    prompt = f'Rewrite this TEXT according to these INSTRUCTIONS: {state["instructions"]} \n\n TEXT: {state["response"]}'
-    state["response"] = state["llm"].invoke(prompt).content
-    return state
+    if state["attempts"] > 5:
+        state["response"] = "I can't help you with that. Try rewording the prompt or asking about something else."
+        return state
+    else:
+        state["attempts"] += 1
+        prompt = f'Rewrite this TEXT according to these INSTRUCTIONS: {state["instructions"]} \n\n TEXT: {state["response"]}'
+        state["response"] = state["llm"].invoke(prompt).content
+        return state
 
 def print_response(state):
     print(state["response"])
@@ -141,7 +150,8 @@ def run_graph(prompt, policy, llm):
         response="",
         policy=policy,
         clean_response="",
-        instructions=""
+        instructions="",
+        attempts=1
     )
     result = GRAPH.invoke(s)
     return result["response"]

@@ -8,7 +8,7 @@ def create_vector_db(file_path):
     data = loader.load()
     
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000, chunk_overlap=400
+        chunk_size=1300, chunk_overlap=300
     )
 
     chunks = text_splitter.split_documents(data)
@@ -27,4 +27,4 @@ def create_vector_db(file_path):
     return vector_db
 
 mydb = create_vector_db("./regression.pdf")
-mydb = mydb.as_retriever()
+mydb = mydb.as_retriever(k=6, search_type='mmr')

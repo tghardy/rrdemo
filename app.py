@@ -1,7 +1,6 @@
 import streamlit as st
 from langchain_ollama import ChatOllama
 from graph import run_graph, invoke_rag
-from joblib import Parallel, delayed
 
 st.set_page_config(page_title="RedactaRAG", layout="wide")
 

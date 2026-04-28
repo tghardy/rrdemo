@@ -50,7 +50,7 @@ def invoke_rag(question, policy, llm=None):
     
     print("RAG Response:", response)
     
-    return response
+    return response, context
 
 
 ## Define State class
@@ -154,4 +154,4 @@ def run_graph(prompt, policy, llm):
         attempts=1
     )
     result = GRAPH.invoke(s)
-    return result["response"]
+    return result["response"], result["context"]

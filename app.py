@@ -1,6 +1,7 @@
 import streamlit as st
 from langchain_ollama import ChatOllama
 from graph import run_graph, invoke_rag
+from joblib import Parallel, delayed
 
 st.set_page_config(page_title="RedactaRAG", layout="wide")
 
@@ -24,6 +25,8 @@ with st.sidebar:
         options=["qwen2.5:14b", "gemma3:1b", "gpt-oss:20b"],
         index=0
     )
+
+    temperature = st.slider("Model Temperature:", min_value=0.0, max_value=1.0)
     
     # # Mode selection checkbox
     # use_graph = st.checkbox(
@@ -105,14 +108,14 @@ if user_input:
                 with st.spinner("Generating response..."):
                     try:
                         # Initialize LLM with selected model
-                        llm = ChatOllama(model=model_choice, temperature=0.2)
+                        llm = ChatOllama(model=model_choice, temperature=temperature)
                         
                         if col is chat1:
                             # Use run_graph (requires policy)
                             if not policy.strip():
                                 st.warning("⚠️ Policy is required for run_graph mode. Please enter a policy in the sidebar.")
                             else:
-                                response = run_graph(user_input, policy, llm)
+                                response, context = run_graph(user_input, policy, llm)
                                 st.caption("🔒 RedactaRAG")
                                 st.markdown(response)
                                 st.session_state.redactarag_messages.append({
@@ -120,9 +123,12 @@ if user_input:
                                     "content": response,
                                     "model_type": "redactarag"
                                 })
+
+                                # with st.expander("View the model's context:"):
+                                #     st.markdown(context)
                         else:
                             # Use baseline invoke_rag
-                            response = invoke_rag(user_input, llm)
+                            response, context = invoke_rag(user_input, llm)
                             st.caption("📊 Standard RAG")
                             st.markdown(response)
                             st.session_state.standard_messages.append({
@@ -130,6 +136,9 @@ if user_input:
                                 "content": response,
                                 "model_type": "standard_rag"
                             })
+
+                        with st.expander("View the context for this response:"):
+                            st.markdown(context)
                     
                     except Exception as e:
                         st.error(f"Error generating response: {str(e)}")

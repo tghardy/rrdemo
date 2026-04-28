@@ -4,18 +4,21 @@ from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 
 def create_vector_db(file_path):
-    loader = PyPDFLoader(file_path)
-    data = loader.load()
-    
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1300, chunk_overlap=300
-    )
+    chunks = []
 
-    chunks = text_splitter.split_documents(data)
+    for filepath in file_path:
+        loader = PyPDFLoader(filepath)
+        data = loader.load()
+        
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1300, chunk_overlap=300
+        )
+        
+        chunks += text_splitter.split_documents(data)
 
-    embeddings= OllamaEmbeddings(
-        model="mxbai-embed-large"
-    )
+        embeddings= OllamaEmbeddings(
+            model="mxbai-embed-large"
+        )
 
     vector_db = Chroma.from_documents(
         documents=chunks,
@@ -26,5 +29,5 @@ def create_vector_db(file_path):
     print(f"Vector database created with {len(chunks)} chunks.")
     return vector_db
 
-mydb = create_vector_db("./regression.pdf")
+mydb = create_vector_db(["./regression.pdf", "./LinearModelsWithR.pdf"])
 mydb = mydb.as_retriever(k=6, search_type='mmr')

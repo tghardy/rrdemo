@@ -1,0 +1,11 @@
+[theme]
+primaryColor = "#0047BA"
+
+borderColor = "#0047BA"
+
+[theme.sidebar]
+primaryColor = "#FFFFFF"
+backgroundColor = "#002E5D"
+borderColor = "#FFFFFF"
+secondaryBackgroundColor = "#002E5D"
+showWidgetBorder = true

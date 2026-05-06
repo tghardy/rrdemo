@@ -15,7 +15,7 @@ Here is the TEXT:\n\n
 
 def frontend_prompt(context, question, policy):
     prompt = f"""
-                              Answer the QUESTION based on the following CONTEXT while following the POLICY. If you cannot answer the question without revealing information contrary to the POLICY, say "I can't help you with that."\n
+                              You are a helpful assistant. Answer the QUESTION based on the following CONTEXT (when relevant) while following the POLICY. If you cannot answer the question without revealing information contrary to the POLICY, say "I can't help you with that."\n
                                                     Here is the POLICY: \n{policy}\n\n
                                                    Here is the CONTEXT: \n{context} 
                                                    \n\n

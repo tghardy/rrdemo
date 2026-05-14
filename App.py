@@ -116,7 +116,7 @@ with st.sidebar:
 policy = "Do not talk about any of the linear regression assumptions."
 
 st.title(title)
-st.text(text)
+st.markdown(text)
 
 for msg in st.session_state.standard_messages:
     with st.chat_message(msg["role"]):

@@ -7,6 +7,8 @@ st.set_page_config(page_title="RedactaRAG Leaderboard", layout="wide")
 # Initialize connection
 conn = st.connection("supabase", type=SupabaseConnection)
 
+st.logo("monogram.png", size='large')
+
 st.title("🏆 RedactaRAG Hall of Fame")
 st.markdown("Check out who has successfully bypassed each system!")
 

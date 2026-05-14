@@ -50,11 +50,11 @@ with st.sidebar:
     # Model selection dropdown
     model_choice = st.selectbox(
         "Select Model:",
-        options=["qwen2.5:14b", "gemma3:1b", "gemma4:31b"],
+        options=["gpt-oss:20b", "gemma3:1b", "qwen3.5:9b", "gemma4:e2b"],
         index=0
     )
 
-    temperature = st.slider("Model Temperature:", min_value=0.0, max_value=1.0)
+    temperature = st.slider("Model Temperature:", min_value=0.0, max_value=1.0, value=0.2)
     
     # # Mode selection checkbox
     # use_graph = st.checkbox(
@@ -105,6 +105,16 @@ with chat2:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
+# TODO: Implement a summarizer model. One that securely summarizes (e.g. does things in accordance with the policy) and one that does not.
+
+summarizer = ChatOllama(model="gemma3:1b", temperature=0)
+
+if st.session_state.redactarag_messages is not []:
+    r_context = "Previous conversation summary:" + summarizer.invoke(
+        "Summarize the following conversation in a way that adheres to the policy: " + str(st.session_state.redactarag_messages)
+    + "\n\nPolicy: " + policy).content + "END PREVIOUS CONVERSATION SUMMARY.\n\n"
+    s_context = "Previous conversation summary:" + summarizer.invoke(
+        "Summarize the following conversation: " + str(st.session_state.standard_messages)).content + "END PREVIOUS CONVERSATION SUMMARY.\n\n"
 
 # New chat input
 user_input = st.chat_input("Enter your prompt...")
@@ -130,7 +140,7 @@ if user_input:
                             if not policy.strip():
                                 st.warning("⚠️ Policy is required for run_graph mode. Please enter a policy in the sidebar.")
                             else:
-                                response, context = run_graph(str(st.session_state.redactarag_messages), policy, llm)
+                                response, context = run_graph(r_context + user_input, policy, llm)
                                 st.caption("🔒 RedactaRAG")
                                 st.markdown(response)
                                 st.session_state.redactarag_messages.append({
@@ -143,7 +153,7 @@ if user_input:
                                 #     st.markdown(context)
                         else:
                             # Use baseline invoke_rag
-                            response, context = invoke_rag(str(st.session_state.standard_messages), llm)
+                            response, context = invoke_rag(s_context + user_input, policy, llm)
                             st.caption("📊 Standard RAG")
                             st.markdown(response)
                             st.session_state.standard_messages.append({

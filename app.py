@@ -5,7 +5,7 @@ import os
 from ollama import Client
 
 OLLAMA_HOST = "https://ollama.com"
-API_KEY = st.secrets("OLLAMA_API_KEY")
+API_KEY = st.secrets["OLLAMA_API_KEY"]
 
 
 llm = ChatOllama(

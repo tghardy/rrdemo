@@ -36,8 +36,8 @@ def save_progress_to_supabase(user_name, email, current_level):
         }
         conn.table("leaderboard").upsert(data, on_conflict="email").execute()
 
-def log_chat_to_supabase(email, role, content, level):
-    """Saves every message to a history table for your RAG research"""
+def log_chat_to_supabase(email, role, content, level, is_success=False):
+    """Saves message with an optional success indicator"""
     if not email:
         return
         
@@ -47,11 +47,11 @@ def log_chat_to_supabase(email, role, content, level):
             "role": role,
             "content": content,
             "level": level,
+            "is_success": is_success, # New field
             "created_at": datetime.now().isoformat()
         }
         conn.table("chat_history").insert(data).execute()
-    except Exception as e:
-        # We fail silently here so the user can still chat if the DB is slow
+    except Exception:
         pass
 
 def get_leaderboard_data():
@@ -130,7 +130,6 @@ for msg in st.session_state.standard_messages:
 # New chat input
 user_input = st.chat_input("Enter your prompt...")
 if user_input:
-    log_chat_to_supabase(email, "user", user_input, level)
 
     st.session_state.standard_messages.append({"role": "user", "content": user_input})
 
@@ -149,8 +148,7 @@ if user_input:
                 elif level == 3:
                     prompt = get_secure_prompt(user_input, llm)
                     response, context = run_graph(prompt, policy, llm)
-                log_chat_to_supabase(email, "assistant", response, level)
-                st.caption("📊 Standard RAG")
+                st.caption("📊 Nemotron Nano 30b")
                 st.markdown(response)
                 st.session_state.standard_messages.append({
                     "role": "assistant",
@@ -160,6 +158,8 @@ if user_input:
 
                 with st.spinner("Scoring response..."):
                     is_correct = evaluate_response_for_score(response, llm)
+                    log_chat_to_supabase(email, "user", user_input, level, is_correct)
+                    log_chat_to_supabase(email, "assistant", response, level, is_correct)
                     if is_correct:
                         save_progress_to_supabase(user, email, level)
                         if level == 1:

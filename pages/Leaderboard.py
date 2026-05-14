@@ -56,3 +56,7 @@ try:
 except Exception as e:
     st.error("Could not load the scoreboard. Please try again later.")
     # st.write(e) # Uncomment for debugging
+
+with st.sidebar:
+    st.markdown("**Access the app by scanning this QR code!")
+    st.image("qr.png")

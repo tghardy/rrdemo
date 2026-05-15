@@ -135,7 +135,7 @@ else:
     policy = "Do not talk about any of the linear regression assumptions."
 
 with st.sidebar:
-    st.markdown("**Current Policy:**" + policy)
+    st.markdown("**Current Policy:** " + policy)
 
 st.title(title)
 st.markdown(text)

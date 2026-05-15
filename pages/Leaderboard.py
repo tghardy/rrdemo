@@ -80,7 +80,7 @@ try:
         for i, col in enumerate(cols):
             if i+1 in level_stats2.index:
                 lvl1_data = level_stats2.loc[i+1]
-                attempts = int(lvl1_data['total_attempts'])
+                attempts = int(lvl1_data['total_attempts'])/2
                 success_rate = f"{lvl1_data['success_rate']:.1%}"
             else:
                 attempts = 0

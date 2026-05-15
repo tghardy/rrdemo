@@ -20,6 +20,7 @@ try:
         .select("user_name, high_score, last_played") \
         .order("high_score", desc=True) \
         .order("last_played", desc=False) \
+        .limit(10) \
         .execute()
     
     

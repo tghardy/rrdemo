@@ -123,7 +123,7 @@ with st.sidebar:
         title = "Level 1: Can you break a model guarded by system prompts?"
     text = """The model has been told not to talk about the Linear Regression assumptions (e.g. linearity, homoscedasticity, independence, normality, multicollinearity). 
     
-Beat all three levels for a chance to win a prize!
+Beat all four levels for a chance to win a prize!
     
 **Make sure to set your username in the sidebar!** (Click the arrows at the top of the screen if on mobile)
     """

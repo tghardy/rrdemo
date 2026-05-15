@@ -39,7 +39,7 @@ def save_progress_to_supabase(user_name, email, current_level):
 def log_chat_to_supabase(email, role, content, level, is_success=False):
     """Saves message with an optional success indicator"""
     if not email:
-        return
+        email = "N/A"
         
     try:
         data = {

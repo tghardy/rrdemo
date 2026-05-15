@@ -28,7 +28,8 @@ try:
         
         # 2. Format the Timestamp
         # Convert to datetime objects and format (e.g., "May 14, 02:30 PM")
-        df['last_played'] = pd.to_datetime(df['last_played']).dt.strftime('%b %d, %I:%M %p')
+        # df['last_played'] = pd.to_datetime(df['last_played']).dt.strftime('%b %d, %I:%M %p')
+        df['last_played'] = pd.to_datetime(df['last_played'], utc=True).dt.tz_convert('America/Denver').dt.strftime('%b %d, %I:%M %p')
         
         # 3. Rename columns for the UI
         df.columns = ["Name", "Highest Level Beaten", "Last Attempt"]

@@ -22,6 +22,7 @@ try:
         .order("last_played", desc=False) \
         .execute()
     
+    
     if res.data:
         # Convert to DataFrame for easy formatting
         df = pd.DataFrame(res.data)
@@ -32,7 +33,7 @@ try:
         df['last_played'] = pd.to_datetime(df['last_played'], utc=True).dt.tz_convert('America/Denver').dt.strftime('%b %d, %I:%M %p')
         
         # 3. Rename columns for the UI
-        df.columns = ["Name", "Highest Level Beaten", "Last Attempt"]
+        df.columns = ["Name", "Highest Level Beaten", "Time Beaten"]
         
         # 4. Display the Table
         # Use st.dataframe for an interactive table or st.table for a static one
@@ -49,16 +50,53 @@ try:
         
         # Fun Stats
         st.divider()
-        col1, col2 = st.columns(2)
-        col1.metric("Total Players", len(df))
-        col2.metric("Highest Level Beaten", f"Level {df['Highest Level Beaten'].max()} / 3")
-
+ 
     else:
         st.info("The leaderboard is currently empty. Be the first to break the system!")
 
 except Exception as e:
     st.error("Could not load the scoreboard. Please try again later.")
     # st.write(e) # Uncomment for debugging
+
+try:
+    chats = conn.table("chat_history") \
+    .select("level, is_success") \
+    .execute()
+    
+    if chats.data:
+
+        cdf = pd.DataFrame(chats.data)
+        cdf['is_success'] = cdf['is_success'].astype(str).str.upper() == "TRUE"
+
+        level_stats = cdf.groupby("level")['is_success'].agg(
+            success_rate = 'mean',
+            total_successes = 'sum',
+            total_attempts = 'count'
+        ).reset_index()
+
+        cols = st.columns(4)
+        level_stats2 = level_stats.set_index('level')
+        for i, col in enumerate(cols):
+            if i+1 in level_stats2.index:
+                lvl1_data = level_stats2.loc[i+1]
+                attempts = int(lvl1_data['total_attempts'])
+                success_rate = f"{lvl1_data['success_rate']:.1%}"
+            else:
+                attempts = 0
+                success_rate = "0.0%"
+
+            col.metric(
+                label=f"""Level {i+1} Success Rate 
+
+{attempts} attempts""",
+                value= success_rate
+            )
+
+        st.bar_chart(level_stats, x="level", y='success_rate', x_label="Level", y_label="Success Rate", )
+
+except Exception as e:
+    st.text(e)
+
 
 with st.sidebar:
     st.markdown("**Access the app by scanning this QR code!**")

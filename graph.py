@@ -70,12 +70,13 @@ def response(state):
 def evaluate(state):
     prompt = validation_prompt(state['response'], state["policy"])
     response = state["llm"].invoke(prompt)
+    print("VALIDATOR OUTPUT:", response.content)
     state["instructions"] = response.content
 
     return state
 
 def decide_node(state):
-    if 'good' in state["instructions"].strip().lower():
+    if 'GOOD' in state["instructions"].strip():
         return "print_response"
     elif state["attempts"] > 5:
         state["response"] = "I can't help you with that. Try rewording the prompt or asking about something else."

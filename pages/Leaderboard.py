@@ -10,7 +10,6 @@ conn = st.connection("supabase", type=SupabaseConnection)
 st.logo("monogram.png", size='large')
 
 st.title("🏆 RedactaRAG Hall of Fame")
-st.markdown("Get to the top of the leaderboard to win a prize!")
 
 # 1. Fetch Data
 try:

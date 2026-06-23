@@ -98,7 +98,7 @@ with st.sidebar:
     st.header("⚙️ Configuration")
 
     user = st.text_input("Set your display name...")
-    email = st.text_input("Enter your email...")
+    email = "Not tracked"
 
     st.divider()
 

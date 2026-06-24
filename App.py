@@ -103,6 +103,7 @@ with st.sidebar:
     st.divider()
 
     password = st.text_input(label="Enter password for the next level here...")
+    st.image("qr.png")
     
     # Policy textbox
     if password == "1934":
